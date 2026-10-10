@@ -1,47 +1,43 @@
-# SAR Target Recognition with CNNs — and a test for shortcut learning
+# SAR Target Recognition with CNNs
 
-Automatic target recognition (ATR) on **MSTAR** synthetic aperture radar imagery with convolutional neural networks. Beyond accuracy, the project asks *what the network is actually looking at*: a masking-based **shortcut test** measures how much of the accuracy comes from the vehicle and how much from the background clutter that MSTAR is known to share within each class.
+Automatic target recognition on MSTAR synthetic aperture radar images, with a focus on a question that accuracy alone does not answer: is the network recognising the vehicle, or the ground around it?
 
 <p align="center"><img src="docs/assets/pipeline.svg" width="100%" alt="Pipeline"></p>
 
-> **Status:** Work in progress — the pipeline is implemented and tested; results will be added once the MSTAR experiments are completed.
-> This repository presents the project and its design. **The source code is kept in a private repository** and can be shared on request.
+## Motivation
 
-## Why this project
+CNNs reach close to perfect accuracy on MSTAR, the standard public SAR benchmark. However, every vehicle in MSTAR was recorded at a particular site, so the clutter around a target is correlated with its class, and it has been reported that the background alone can be enough to classify the images. This project measures how much of a model's accuracy actually comes from the target.
 
-SAR sees through clouds and at night, which makes it central to surveillance and defence applications. Its images, however, look nothing like photographs — a target is a handful of bright scattering centres, a radar shadow and speckled clutter — and its appearance changes strongly with the viewing angle. CNNs report near-perfect accuracy on MSTAR, the standard benchmark, but each vehicle was recorded at a particular site, so the ground around the target is correlated with the class. **A high score is only meaningful if the model looks at the target.**
+## Approach
 
-## What is inside
+- Models: A-ConvNet (all-convolutional, about 0.3 M parameters) trained from scratch, and ResNet-18 trained from scratch and from ImageNet weights.
+- Protocols: SOC (10 classes, train at 17°, test at 15° depression) and EOC-1 (large depression change, test at 30° and 45°).
+- Validation comes from the training angle only, so the test angle is never used for model selection.
+- Shortcut test: each chip is split into target, shadow and clutter. Models are evaluated on target-only and background-only chips, and one model is trained and tested without ever seeing the target. The removed region is a fixed box filled with clutter-like noise, so its outline cannot reveal the vehicle size.
+- Robustness: noise at decreasing SNR, randomly corrupted pixels and partial occlusion of the target.
+- Explainability: Grad-CAM, evaluated with numbers (share of the heat map on the target, pointing game) and not only with example images.
 
-| | |
-|---|---|
-| **Networks** | A-ConvNet (all-convolutional, ~0.3 M parameters) · ResNet-18 from scratch · ResNet-18 ImageNet-pretrained |
-| **Protocols** | SOC: 10 classes, 17° → 15° · EOC-1: 4 classes, 17° → 30° / 45° depression |
-| **Shortcut test** | full vs target-only vs background-only chips, and a model trained without ever seeing the target |
-| **Robustness** | noise (SNR 20 → −5 dB), corrupted pixels, partial target occlusion, per-azimuth accuracy |
-| **Explainability** | Grad-CAM with *measured* localisation: heat-map energy on the target, pointing-game hit rate |
-| **Rigour** | validation from the training angle only, three seeds (mean ± std), unit tests, synthetic end-to-end test |
+The full experiment design is in [docs/DESIGN.md](docs/DESIGN.md).
 
-## Design
+## Roadmap
 
-The full experiment design — data protocol, preprocessing, network architectures, shortcut-test logic, robustness and explainability metrics, limitations — is in **[docs/DESIGN.md](docs/DESIGN.md)**.
+- [x] Data reader for raw MSTAR files and image chips
+- [x] Training, evaluation, shortcut test, robustness and Grad-CAM pipeline, tested on synthetic data
+- [ ] SOC experiments (three seeds per model)
+- [ ] Shortcut test on MSTAR
+- [ ] EOC-1 experiments
+- [ ] Write-up of results
 
-## Results
+## Code
 
-Result tables will be published here when the experiments are completed.
+The implementation (data handling, models, training and analysis scripts, tests and a Colab notebook) is kept in a private repository for now. I am happy to share it on request.
 
-| Model | Params | SOC acc. (15°) | EOC-1 acc. (30°) | Background-only acc. |
-|---|---|---|---|---|
-| A-ConvNet | 0.30 M | _TBD_ | _TBD_ | _TBD_ |
-| ResNet-18 (scratch) | 11.2 M | _TBD_ | _TBD_ | _TBD_ |
-| ResNet-18 (ImageNet) | 11.2 M | _TBD_ | _TBD_ | – |
+## Data
 
-## Tech stack
+MSTAR public release, Sensor Data Management System, U.S. Air Force Research Laboratory. The data is not redistributed here.
 
-Python · PyTorch · torchvision · NumPy / SciPy · pandas · Matplotlib · Google Colab (T4 GPU)
+## References
 
-## Author
-
-**Şule Özdamar** — Computer Engineering, İstanbul Arel University · [github.com/mahdildarr](https://github.com/mahdildarr)
-
-MSTAR data: Sensor Data Management System (SDMS), U.S. Air Force Research Laboratory. The dataset is not redistributed here.
+- S. Chen, H. Wang, F. Xu, Y.-Q. Jin. Target Classification Using the Deep Convolutional Networks for SAR Images. IEEE TGRS, 2016.
+- R. Schumacher, K. Rosenbach. ATR of battlefield targets by SAR: classification results using the public MSTAR dataset compared with a dataset by QinetiQ UK. NATO RTO-MP-SET-080, 2004.
+- C. Belloni, N. Aouf, A. Balleri et al. Explainability of deep SAR ATR through feature analysis. IEEE Transactions on Aerospace and Electronic Systems, 2021.
