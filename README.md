@@ -4,7 +4,7 @@ Automatic target recognition (ATR) on **MSTAR** synthetic aperture radar imagery
 
 <p align="center"><img src="docs/assets/pipeline.svg" width="100%" alt="Pipeline"></p>
 
-> **Status:** 🚧 Work in progress — pipeline implemented and tested; MSTAR experiments running.
+> **Status:** Work in progress — pipeline implemented and tested; MSTAR experiments running.
 > This repository presents the project and its design. **The source code is kept in a private repository** and can be shared on request.
 
 ## Why this project
