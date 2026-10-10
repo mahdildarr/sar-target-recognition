@@ -19,14 +19,21 @@ CNNs reach close to perfect accuracy on MSTAR, the standard public SAR benchmark
 
 The full experiment design is in [docs/DESIGN.md](docs/DESIGN.md).
 
-## Roadmap
+## Progress
 
-- [x] Data reader for raw MSTAR files and image chips
-- [x] Training, evaluation, shortcut test, robustness and Grad-CAM pipeline, tested on synthetic data
-- [ ] SOC experiments (three seeds per model)
+- [x] Reader for raw MSTAR files and converted image chips
+- [x] SOC and EOC-1 protocols with validation from the training angle only
+- [x] A-ConvNet and ResNet-18 models
+- [x] Shortcut test with target / shadow / clutter masking
+- [x] Robustness curves (noise, corrupted pixels, occlusion)
+- [x] Grad-CAM localisation metrics
+- [x] Unit tests and an end-to-end test on synthetic data with injected background bias
+- [x] Colab notebook
+
+Next:
+
+- [ ] SOC and EOC-1 experiments on MSTAR
 - [ ] Shortcut test on MSTAR
-- [ ] EOC-1 experiments
-- [ ] Write-up of results
 
 ## Code
 
